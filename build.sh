@@ -34,6 +34,12 @@ function build_images() {
   cd $BASE_DIR/base && docker build -t wl4g/toolbox-base:${build_version} . &
   cd $BASE_DIR/arthas && docker build -t wl4g/toolbox-arthas:${build_version} . &
 
+  if [ ! -d $BASE_DIR/pprof/gperftools ]; then
+    echo "No found precondidtions depends and cloning from: https://github.com/gperftools/gperftools"
+    cd $BASE_DIR/pprof && git clone https://github.com/gperftools/gperftools
+  fi
+  cd $BASE_DIR/pprof && docker build -t wl4g/toolbox-pprof:minideb-buster-${build_version} . &
+
   wait
 }
 
@@ -47,16 +53,21 @@ function push_images() {
   echo "Tagging images to $repo_uri ..."
   docker tag wl4g/toolbox-base:${build_version} $repo_uri/toolbox-base:${build_version}
   docker tag wl4g/toolbox-arthas:${build_version} $repo_uri/toolbox-arthas:${build_version}
+  docker tag wl4g/toolbox-pprof:minideb-buster-${build_version} $repo_uri/toolbox-pprof:minideb-buster-${build_version}
+
   docker tag wl4g/toolbox-base:${build_version} $repo_uri/toolbox-base:latest
   docker tag wl4g/toolbox-arthas:${build_version} $repo_uri/toolbox-arthas:latest
+  docker tag wl4g/toolbox-pprof:minideb-buster-${build_version} $repo_uri/toolbox-pprof:minideb-buster
 
   echo "Pushing images of ${build_version}@$repo_uri ..."
   docker push $repo_uri/toolbox-base:${build_version} &
   docker push $repo_uri/toolbox-arthas:${build_version} &
+  docker push $repo_uri/toolbox-pprof:minideb-buster-${build_version} &
 
   echo "Pushing images of latest@$repo_uri ..."
   docker push $repo_uri/toolbox-base &
   docker push $repo_uri/toolbox-arthas &
+  docker push $repo_uri/toolbox-pprof:minideb-buster
 
   wait
 }
