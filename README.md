@@ -131,3 +131,6 @@ while true; do ps -ef | grep arthas; sleep 0.2; done
 - 3.7 [arthas 在 ephemeral container attach 到目标 pod 失败. #1874](https://github.com/alibaba/arthas/issues/1874)
 
 - 3.8 [开发一个 arthas native agent 和远程管理平台，统一实时管理 JVM 集群. #2163](https://github.com/alibaba/arthas/issues/2163)
+
+- 3.9 [gperftools 追踪 JVM native 内存泄露](https://www.notion.so/gperftools-JVM-native-4aecf52bf9ed4e56a2519396119ec404)
+
