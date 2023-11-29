@@ -10,6 +10,7 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+127.0.0.1:1080
 
 # Dependency directories (remove the comment below to include it)
 # vendor/

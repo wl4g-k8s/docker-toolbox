@@ -30,15 +30,28 @@ Usage: ./$(basename $0) [OPTIONS] [arg1] [arg2] ...
 function build_images() {
   local build_version=$(git branch | grep '*' | sed -E 's/\* \(HEAD detached at |\)|\* //g')
 
-  echo "Building images ..."
+  echo "Building for toolbox-base and toolbox-arthas ..."
   cd $BASE_DIR/base && docker build -t wl4g/toolbox-base:${build_version} . &
   cd $BASE_DIR/arthas && docker build -t wl4g/toolbox-arthas:${build_version} . &
 
+  echo "Building for toolbox-pprof ..."
   if [ ! -d $BASE_DIR/pprof/gperftools ]; then
     echo "No found precondidtions depends and cloning from: https://github.com/gperftools/gperftools"
     cd $BASE_DIR/pprof && git clone https://github.com/gperftools/gperftools
   fi
   cd $BASE_DIR/pprof && docker build -t wl4g/toolbox-pprof:minideb-buster-${build_version} . &
+
+  echo "Building for toolbox-mat ..."
+  # see:https://eclipse.dev/mat/downloads.php
+  if [ ! -d $BASE_DIR/mat/mat ]; then
+    echo "No found precondidtions depends and downloading from: https://eclipse.dev/mat/downloads.php"
+    sudo apt install -y unzip
+    # china network to see: https://mirrors.neusoft.edu.cn/eclipse/mat/1.14.0/rcp/MemoryAnalyzer-1.14.0.20230315-linux.gtk.x86_64.zip
+    cd $BASE_DIR/mat && \
+curl -kL -o mat.zip 'https://mirror.umd.edu/eclipse/mat/1.14.0/rcp/MemoryAnalyzer-1.14.0.20230315-linux.gtk.x86_64.zip' \
+&& unzip mat.zip && rm -rf mat.zip # unzip -d ./mat mat.zip
+  fi
+  cd $BASE_DIR/mat && docker build -t wl4g/toolbox-mat:${build_version} . &
 
   wait
 }
@@ -54,20 +67,24 @@ function push_images() {
   docker tag wl4g/toolbox-base:${build_version} $repo_uri/toolbox-base:${build_version}
   docker tag wl4g/toolbox-arthas:${build_version} $repo_uri/toolbox-arthas:${build_version}
   docker tag wl4g/toolbox-pprof:minideb-buster-${build_version} $repo_uri/toolbox-pprof:minideb-buster-${build_version}
+  docker tag wl4g/toolbox-mat:${build_version} $repo_uri/toolbox-mat:${build_version}
 
   docker tag wl4g/toolbox-base:${build_version} $repo_uri/toolbox-base:latest
   docker tag wl4g/toolbox-arthas:${build_version} $repo_uri/toolbox-arthas:latest
   docker tag wl4g/toolbox-pprof:minideb-buster-${build_version} $repo_uri/toolbox-pprof:minideb-buster
+  docker tag wl4g/toolbox-mat:${build_version} $repo_uri/toolbox-mat:latest
 
   echo "Pushing images of ${build_version}@$repo_uri ..."
   docker push $repo_uri/toolbox-base:${build_version} &
   docker push $repo_uri/toolbox-arthas:${build_version} &
   docker push $repo_uri/toolbox-pprof:minideb-buster-${build_version} &
+  docker push $repo_uri/toolbox-mat:${build_version} &
 
   echo "Pushing images of latest@$repo_uri ..."
   docker push $repo_uri/toolbox-base &
   docker push $repo_uri/toolbox-arthas &
-  docker push $repo_uri/toolbox-pprof:minideb-buster
+  docker push $repo_uri/toolbox-pprof:minideb-buster &
+  docker push $repo_uri/toolbox-mat &
 
   wait
 }

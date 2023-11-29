@@ -1,0 +1,19 @@
+pipelines:
+  - name: toolbox-mat
+resources:
+  - name: toolbox-mat-git-repo
+    type: GitRepo
+    configuration:
+      gitProvider: ToolboxMatGithub
+      path: wl4g-k8s/toolbox-mat
+    branches:
+      include: pipelines
+steps:
+  - name: step_1
+    type: Bash
+    configuration:
+      inputSteps:
+        - name: step_1               # Execute this step after the prior step
+    execution:
+      onExecute:
+        - echo "Goodbye World!"

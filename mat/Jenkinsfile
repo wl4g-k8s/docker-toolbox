@@ -1,0 +1,76 @@
+#!groovy
+
+pipeline {
+    agent {
+        node {
+            label 'java'
+        }
+    }
+    tools {
+        gradle 'gradle-6.0.1'
+        jdk 'jdk-11'
+    }
+    stages {
+        stage('Clean workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+        stage('Git checkout') {
+            steps {
+                git branch: 'master',
+                        credentialsId: 'jenkins-ssh',
+                        url: 'git@github.com:wl4g-k8s/toolbox-mat.git'
+            }
+        }
+        stage('Bump and set version') {
+            steps {
+                script {
+                    sh 'docker run --rm -v $PWD:/app -w /app treeder/bump --filename version.txt'
+                }
+                script {
+                    version = readFile 'version.txt'
+                }
+            }
+        }
+        stage('docker build') {
+            steps {
+                script {
+                    sh "docker build . -t registry.cn-shenzhen.aliyuncs.com/wl4g-k8s/toolbox-mat:${version} -t registry.cn-shenzhen.aliyuncs.com/wl4g-k8s/toolbox-mat:latest -t wl4g/toolbox-mat:${version} -t wl4g/toolbox-mat:latest"
+                }
+            }
+        }
+        stage('test') {
+            steps {
+                script {
+                    sh "gradle build test -i"
+                }
+            }
+        }
+        stage('docker push') {
+            steps {
+                script {
+                    sh '#!/bin/sh -e\n' + 'echo $BINTRAY_KEY | docker login --username=$BINTRAY_USER --password-stdin registry.cn-shenzhen.aliyuncs.com/wl4g-k8s'
+                    sh "docker push registry.cn-shenzhen.aliyuncs.com/wl4g-k8s/toolbox-mat:${version}"
+                    sh "docker push registry.cn-shenzhen.aliyuncs.com/wl4g-k8s/toolbox-mat:latest"
+                    sh "docker push wl4g/toolbox-mat:${version}"
+                    sh "docker push wl4g/toolbox-mat:latest"
+                }
+            }
+        }
+        stage('commit version change') {
+            steps {
+                script {
+                    sh "git commit -m 'auto version bump' -- version.txt"
+                    sh "git push --set-upstream origin master"
+                }
+            }
+        }
+    }
+    post {
+        always {
+            junit 'build/test-results/**/*.xml'
+        }
+    }
+
+}

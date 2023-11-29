@@ -16,7 +16,7 @@
 FROM registry.cn-shenzhen.aliyuncs.com/wl4g-k8s/bitnami_minideb:buster AS base
 
 LABEL maintainer="James Wong<jameswong1376@gmail.com>" \
-  description="Toolbox is a cloud native troubleshooting image." \
+  description="Toolbox for pprof is a generic memory malloc troubleshooting image." \
   repoName=https://github.com/wl4g-k8s/docker-toolbox \
   branch=master \
   pr= \
