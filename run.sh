@@ -78,8 +78,8 @@ function build_images() {
 
 function push_images() {
   local push_modules=$1
+  local repo_uri="$2"
   local build_version=$(git branch | grep '*' | sed -E 's/\* \(HEAD detached at |\)|\* //g')
-  local repo_uri="$1"
 
   [ -z "$repo_uri" ] && repo_uri="docker.io/wl4g"
   ## FIX: Clean up suffix delimiters for normalization '/'

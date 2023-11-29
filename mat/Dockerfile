@@ -13,11 +13,11 @@
 ## limitations under the License.
 ##
 
-FROM registry.cn-shenzhen.aliyuncs.com/wl4g-k8s/bitnami_minideb:buster AS builder
-WORKDIR /opt
-RUN apt update && apt-get install -y wget unzip
-RUN wget -O mat.zip https://mirror.umd.edu/eclipse/mat/1.14.0/rcp/MemoryAnalyzer-1.14.0.20230315-linux.gtk.x86_64.zip
-RUN unzip mat.zip && rm -rf mat.zip
+#FROM registry.cn-shenzhen.aliyuncs.com/wl4g-k8s/bitnami_minideb:buster AS builder
+#WORKDIR /opt
+#RUN apt update && apt-get install -y wget unzip
+#RUN wget -O mat.zip https://mirror.umd.edu/eclipse/mat/1.14.0/rcp/MemoryAnalyzer-1.14.0.20230315-linux.gtk.x86_64.zip
+#RUN unzip mat.zip && rm -rf mat.zip
 
 FROM registry.cn-shenzhen.aliyuncs.com/wl4g-k8s/openjdk:17-ea-33-jdk-slim-buster
 
@@ -32,7 +32,8 @@ LABEL maintainer="James Wong<jameswong1376@gmail.com>" \
   buildURL=
 
 WORKDIR /opt
-COPY --from=builder /opt/mat /opt/mat
-COPY run.sh ./mat
+#COPY --from=builder /opt/mat /opt/mat
+COPY ./mat /opt/mat
+COPY ./run.sh ./mat
 WORKDIR /data
 ENTRYPOINT ["/opt/mat/run.sh"]
