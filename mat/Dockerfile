@@ -19,7 +19,7 @@ RUN apt update && apt-get install -y wget unzip
 RUN wget -O mat.zip https://mirror.umd.edu/eclipse/mat/1.14.0/rcp/MemoryAnalyzer-1.14.0.20230315-linux.gtk.x86_64.zip
 RUN unzip mat.zip && rm -rf mat.zip
 
-FROM openjdk:21-ea-17-jdk-slim-buster
+FROM registry.cn-shenzhen.aliyuncs.com/wl4g-k8s/openjdk:17-ea-33-jdk-slim-buster
 
 LABEL maintainer="James Wong<jameswong1376@gmail.com>" \
   description="Toolbox for Mat is a JVM heap troubleshooting image." \
