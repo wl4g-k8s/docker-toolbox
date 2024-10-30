@@ -5,6 +5,7 @@
 - [Toolbox for arthas](arthas/README.md)
 - [Toolbox for pprof](pprof/README.md)
 - [Toolbox for mat](mat/README.md)
+- [Toolbox for agentmodifier](agentmodifier/README.md)
 
 ## 2. Development Guide
 
