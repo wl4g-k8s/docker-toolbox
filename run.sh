@@ -27,6 +27,7 @@ Usage: ./$(basename $0) [OPTIONS] [arg1] [arg2] ...
           pprof                              Build for toolbox-pprof images.
           mat                                Build for toolbox-mat image
           agentmodifier                      Build for toolbox-agentmodifier image
+          mitm                               Build for toolbox-mitm image
     push                                     Push toolbox images to remote repoistory.
           all                                Push all toolbox images.
           base                               Push for toolbox-base images.
@@ -34,6 +35,7 @@ Usage: ./$(basename $0) [OPTIONS] [arg1] [arg2] ...
           pprof                              Push for toolbox-pprof images.
           mat                                Push for toolbox-mat image
           agentmodifier                      Push for toolbox-agentmodifier image
+          mitm                               Push for toolbox-mitm image
                 <repo_uri>                   Push to repoistory uri. format: <registryUri>/<namespace>, default: docker.io/wl4g
                                                 for example: registry.cn-shenzhen.aliyuncs.com/wl4g-k8s)
 "
@@ -45,12 +47,12 @@ function build_images() {
 
   if [[ $build_modules == *"base"* || $build_modules == *"all"* ]]; then
     echo "Building for toolbox-base ..."
-    cd $BASE_DIR/base && docker build --platform linux/amd64 -t wl4g/toolbox-base:${build_version} . &
+    cd $BASE_DIR/base && docker build ${DOCKER_BUILD_OPTS} --platform linux/amd64 -t wl4g/toolbox-base:${build_version} . &
   fi
 
   if [[ $build_modules == *"arthas"* || $build_modules == *"all"* ]]; then
     echo "Building for toolbox-arthas ..." 
-    cd $BASE_DIR/arthas && docker build --platform linux/amd64 -t wl4g/toolbox-arthas:${build_version} . &
+    cd $BASE_DIR/arthas && docker build ${DOCKER_BUILD_OPTS} --platform linux/amd64 -t wl4g/toolbox-arthas:${build_version} . &
   fi
 
   if [[ $build_modules == *"pprof"* || $build_modules == *"all"* ]]; then
@@ -59,7 +61,7 @@ function build_images() {
       echo "No found precondidtions depends and cloning from: https://github.com/gperftools/gperftools"
       cd $BASE_DIR/pprof && git clone https://github.com/gperftools/gperftools
     fi
-    cd $BASE_DIR/pprof && docker build --platform linux/amd64 -t wl4g/toolbox-pprof:minideb-buster-${build_version} . &
+    cd $BASE_DIR/pprof && docker build ${DOCKER_BUILD_OPTS} --platform linux/amd64 -t wl4g/toolbox-pprof:minideb-buster-${build_version} . &
   fi
 
   if [[ $build_modules == *"mat"* || $build_modules == *"all"* ]]; then
@@ -72,7 +74,7 @@ function build_images() {
       local dl_mat_url='https://mirror.umd.edu/eclipse/mat/1.14.0/rcp/MemoryAnalyzer-1.14.0.20230315-linux.gtk.x86_64.zip'
       cd $BASE_DIR/mat && curl -kL -o mat.zip $dl_mat_url && unzip mat.zip && rm -rf mat.zip # unzip -d ./mat mat.zip
     fi
-    cd $BASE_DIR/mat && docker build --platform linux/amd64 -t wl4g/toolbox-mat:${build_version} . &
+    cd $BASE_DIR/mat && docker build ${DOCKER_BUILD_OPTS} --platform linux/amd64 -t wl4g/toolbox-mat:${build_version} . &
   fi
 
   if [[ $build_modules == *"agentmodifier"* || $build_modules == *"all"* ]]; then
@@ -83,7 +85,12 @@ function build_images() {
     fi
     cd $BASE_DIR/agentmodifier/book-playground/ && git config pull.rebase true && git reset --hard && git pull
     cd $BASE_DIR/agentmodifier/book-playground/java-playground/ && ./gradlew :playground-agent-modifier:clean shadowJar -x test
-    cd $BASE_DIR/agentmodifier && docker build --platform linux/amd64 -t wl4g/toolbox-agentmodifier:${build_version} . &
+    cd $BASE_DIR/agentmodifier && docker build ${DOCKER_BUILD_OPTS} --platform linux/amd64 -t wl4g/toolbox-agentmodifier:${build_version} . &
+  fi
+
+  if [[ $build_modules == *"mitm"* || $build_modules == *"all"* ]]; then
+    echo "Building for toolbox-mitm ..."
+    cd $BASE_DIR/mitm && docker build ${DOCKER_BUILD_OPTS} --platform linux/amd64 -t wl4g/toolbox-mitm:${build_version} . &
   fi
 
   wait
@@ -129,6 +136,12 @@ function push_images() {
     docker push $repo_uri/toolbox-agentmodifier:${build_version} &
     docker push $repo_uri/toolbox-agentmodifier &
   fi
+  if [[ $push_modules == *"mitm"* || $push_modules == *"all"* ]]; then
+    docker tag wl4g/toolbox-mitm:${build_version} $repo_uri/toolbox-mitm:${build_version}
+    docker tag wl4g/toolbox-mitm:${build_version} $repo_uri/toolbox-mitm:latest
+    docker push $repo_uri/toolbox-mitm:${build_version} &
+    docker push $repo_uri/toolbox-mitm &
+  fi
 
   wait
 }
@@ -155,6 +168,9 @@ case $1 in
         agentmodifier)
             build_images "agentmodifier"
             ;;
+        mitm)
+            build_images "mitm"
+            ;;
         *)
             print_help
             ;;
@@ -179,6 +195,9 @@ case $1 in
             ;;
         agentmodifier)
             push_images "agentmodifier" "$3"
+            ;;
+        mitm)
+            push_images "mitm" "$3"
             ;;
         *)
             print_help
