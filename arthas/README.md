@@ -1,4 +1,4 @@
-# Toolbox image for arthas
+# Toolbox image for Arthas
 
 ## 1. Quick start
 
